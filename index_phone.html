@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>近代人物传记</title>
+    <style>
+        :root {
+            --primary-color: #e94560;
+            --bg-color: #1a1a2e;
+            --sidebar-bg: rgba(22, 33, 62, 0.98);
+            --text-color: #e0e0e0;
+            --border-color: rgba(233, 69, 96, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        .theme-light {
+            --bg-color: #f5f5f5;
+            --sidebar-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.15);
+        }
+
+        .theme-sepia {
+            --bg-color: #f4ecd8;
+            --sidebar-bg: #fdf6e3;
+            --text-color: #5c4b37;
+            --border-color: #d4c4a8;
+            --shadow-color: rgba(92, 75, 55, 0.15);
+        }
+
+        .theme-green {
+            --bg-color: #1a2f1a;
+            --sidebar-bg: rgba(26, 47, 26, 0.98);
+            --text-color: #c8d8c8;
+            --border-color: rgba(76, 175, 80, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.4);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        /* 顶部导航栏 */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 56px;
+            background: var(--sidebar-bg);
+            border-bottom: 2px solid var(--primary-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 16px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+
+        .header h1 {
+            font-size: 18px;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+
+        .header-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(233, 69, 96, 0.1);
+            border-radius: 10px;
+            color: var(--primary-color);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
+            background: rgba(233, 69, 96, 0.2);
+        }
+
+        /* 搜索框 */
+        .search-container {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            background: var(--sidebar-bg);
+            padding: 12px 16px;
+            border-bottom: 1px solid var(--border-color);
+            z-index: 999;
+            transform: translateY(-100%);
+            transition: transform 0.3s ease;
+        }
+
+        .search-container.active {
+            transform: translateY(0);
+        }
+
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 15px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 70px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 筛选工具栏 */
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .toolbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 13px;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .filter-select:active {
+            border-color: var(--primary-color);
+        }
+
+        .stats-info {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-left: auto;
+            align-self: center;
+            white-space: nowrap;
+        }
+
+        /* 目录列表 */
+        .catalog {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px 16px;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .group-title {
+            font-size: 13px;
+            color: var(--text-color);
+            opacity: 0.6;
+            padding: 12px 0 8px;
+            font-weight: 600;
+        }
+
+        .catalog-item {
+            padding: 14px 16px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .catalog-item:active {
+            background: rgba(233, 69, 96, 0.15);
+            transform: scale(0.98);
+        }
+
+        .catalog-item.active {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.25) 0%, rgba(233, 69, 96, 0.15) 100%);
+            border-color: var(--primary-color);
+        }
+
+        .catalog-item .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-color);
+            margin-bottom: 6px;
+        }
+
+        .catalog-item .meta {
+            display: flex;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .catalog-item .country-tag {
+            padding: 3px 10px;
+            background: rgba(233, 69, 96, 0.15);
+            color: var(--primary-color);
+            border-radius: 12px;
+        }
+
+        .catalog-item .brief {
+            font-size: 13px;
+            color: var(--text-color);
+            opacity: 0.8;
+            margin-top: 8px;
+            line-height: 1.4;
+        }
+
+        /* 底部标签栏 */
+        .tabbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 70px;
+            background: var(--sidebar-bg);
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding-bottom: 8px;
+            z-index: 1000;
+            box-shadow: 0 -2px 10px var(--shadow-color);
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 8px 16px;
+            border: none;
+            background: none;
+            color: var(--text-color);
+            cursor: pointer;
+            opacity: 0.6;
+            transition: all 0.2s ease;
+        }
+
+        .tab-item.active {
+            color: var(--primary-color);
+            opacity: 1;
+        }
+
+        .tab-item .icon {
+            font-size: 24px;
+        }
+
+        .tab-item .label {
+            font-size: 11px;
+        }
+
+        /* 阅读页面 */
+        .reader-page {
+            position: fixed;
+            top: 56px;
+            left: 0;
+            right: 0;
+            bottom: 70px;
+            background: var(--bg-color);
+            overflow-y: auto;
+            padding: 20px;
+            -webkit-overflow-scrolling: touch;
+            display: none;
+        }
+
+        .reader-page.active {
+            display: block;
+        }
+
+        .reader-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .reader-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .reader-close {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: rgba(233, 69, 96, 0.1);
+            border-radius: 50%;
+            color: var(--primary-color);
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .reader-content {
+            font-size: 16px;
+            line-height: 1.9;
+        }
+
+        .reader-content h1 {
+            font-size: 1.6em;
+            color: var(--primary-color);
+            margin: 24px 0 16px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .reader-content h2 {
+            font-size: 1.3em;
+            color: var(--primary-color);
+            margin: 24px 0 12px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .reader-content h3 {
+            font-size: 1.1em;
+            color: var(--text-color);
+            margin: 20px 0 10px;
+            padding-left: 12px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .reader-content p {
+            margin: 12px 0;
+            text-indent: 2em;
+            text-align: justify;
+        }
+
+        .reader-content hr {
+            border: none;
+            border-top: 2px dashed var(--border-color);
+            margin: 24px 0;
+        }
+
+        /* 欢迎页面 */
+        .welcome-page {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .welcome-icon {
+            font-size: 80px;
+            margin-bottom: 24px;
+        }
+
+        .welcome-page h2 {
+            font-size: 22px;
+            color: var(--primary-color);
+            margin-bottom: 16px;
+        }
+
+        .welcome-page p {
+            font-size: 15px;
+            color: var(--text-color);
+            opacity: 0.7;
+            line-height: 1.8;
+        }
+
+        /* 工具栏弹出层 */
+        .toolbar-popup {
+            position: fixed;
+            top: 60px;
+            right: 10px;
+            background: var(--sidebar-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            z-index: 1001;
+            display: none;
+        }
+
+        .toolbar-popup.active {
+            display: block;
+        }
+
+        .toolbar-popup .title {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.6;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .font-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .font-btn {
+            width: 44px;
+            height: 36px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .font-btn:active {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .font-size-display {
+            font-size: 14px;
+            color: var(--text-color);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        .theme-switch {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .theme-btn.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .theme-btn.default {
+            background: linear-gradient(135deg, #1a1a2e 50%, #e94560 50%);
+        }
+
+        .theme-btn.light {
+            background: #f5f5f5;
+        }
+
+        .theme-btn.sepia {
+            background: #f4ecd8;
+        }
+
+        .theme-btn.green {
+            background: #1a2f1a;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+        }
+
+        .loading-spinner {
+            width: 36px;
+            height: 36px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 分类列表页面 */
+        .category-page {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .category-page.active {
+            display: flex;
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease forwards;
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航栏 -->
+    <header class="header">
+        <h1>📚 近代人物传记</h1>
+        <button class="header-btn" id="search-toggle" title="搜索">🔍</button>
+    </header>
+
+    <!-- 搜索框 -->
+    <div class="search-container" id="search-container">
+        <div class="search-box">
+            <input type="text" class="search-input" id="search-input" placeholder="搜索人物姓名...">
+        </div>
+    </div>
+
+    <!-- 主内容区 -->
+    <main class="main-content" id="main-content">
+        <!-- 目录页面 -->
+        <div class="category-page active" id="catalog-page">
+            <div class="toolbar">
+                <select class="filter-select" id="country-filter">
+                    <option value="all">🌍 全部</option>
+                    <option value="中国">🇨🇳 中国</option>
+                    <option value="日本">🇯🇵 日本</option>
+                    <option value="英国">🇬🇧 英国</option>
+                    <option value="美国">🇺🇸 美国</option>
+                    <option value="德国">🇩🇪 德国</option>
+                    <option value="澳大利亚">🇦🇺 澳大利亚</option>
+                    <option value="爱尔兰">🇮🇪 爱尔兰</option>
+                    <option value="巴格达犹太">🏛️ 巴格达犹太</option>
+                </select>
+                <select class="filter-select" id="sort-select">
+                    <option value="name">🔤 按姓名</option>
+                    <option value="birth">📅 按出生年</option>
+                </select>
+                <span class="stats-info" id="stats-info">共 141 人</span>
+            </div>
+            <div class="catalog" id="catalog"></div>
+        </div>
+    </main>
+
+    <!-- 底部标签栏 -->
+    <nav class="tabbar">
+        <button class="tab-item active" data-tab="catalog">
+            <span class="icon">📖</span>
+            <span class="label">目录</span>
+        </button>
+        <button class="tab-item" data-tab="charts">
+            <span class="icon">📊</span>
+            <span class="label">图谱</span>
+        </button>
+        <button class="tab-item" id="reader-tab">
+            <span class="icon">📄</span>
+            <span class="label">阅读</span>
+        </button>
+    </nav>
+
+    <!-- 工具栏弹出层 -->
+    <div class="toolbar-popup" id="toolbar-popup">
+        <div class="title">字号调节</div>
+        <div class="font-control">
+            <button class="font-btn" id="font-decrease">A-</button>
+            <span class="font-size-display" id="font-size-display">16px</span>
+            <button class="font-btn" id="font-increase">A+</button>
+            <button class="font-btn" id="font-reset">↺</button>
+        </div>
+        <div class="title">主题切换</div>
+        <div class="theme-switch">
+            <button class="theme-btn default active" data-theme="default" title="默认"></button>
+            <button class="theme-btn light" data-theme="light" title="浅色"></button>
+            <button class="theme-btn sepia" data-theme="sepia" title="护眼"></button>
+            <button class="theme-btn green" data-theme="green" title="深绿"></button>
+        </div>
+    </div>
+
+    <!-- 阅读页面 -->
+    <div class="reader-page" id="reader-page">
+        <div class="reader-header">
+            <div class="reader-title" id="reader-title">近代人物传记</div>
+            <button class="reader-close" id="reader-close">✕</button>
+        </div>
+        <div class="reader-content" id="reader-content">
+            <div class="welcome-page">
+                <div class="welcome-icon">📚</div>
+                <h2>近代人物传记</h2>
+                <p>从目录选择一位人物开始阅读</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let peopleData = [];
+        let currentTab = 'catalog';
+        let currentFontSize = 16;
+        let currentDoc = null;
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadPeopleData();
+            buildCatalog();
+            bindEvents();
+        });
+
+        async function loadPeopleData() {
+            try {
+                const response = await fetch('data/people.min.json');
+                const data = await response.json();
+                peopleData = data.data;
+                updateStats();
+            } catch (error) {
+                console.error('加载数据失败:', error);
+            }
+        }
+
+        function buildCatalog(filteredData = null) {
+            const data = filteredData || peopleData;
+            const catalog = document.getElementById('catalog');
+            catalog.innerHTML = '';
+
+            const grouped = {};
+            data.forEach(person => {
+                const letter = getFirstLetter(person.n);
+                if (!grouped[letter]) {
+                    grouped[letter] = [];
+                }
+                grouped[letter].push(person);
+            });
+
+            Object.keys(grouped).sort().forEach(letter => {
+                const groupTitle = document.createElement('div');
+                groupTitle.className = 'group-title';
+                groupTitle.textContent = `▣ ${letter}`;
+                catalog.appendChild(groupTitle);
+
+                grouped[letter].forEach(person => {
+                    const item = createCatalogItem(person);
+                    catalog.appendChild(item);
+                });
+            });
+        }
+
+        function getFirstLetter(name) {
+            const foreignNames = ['丁家立','利顺德','赫德','克林德','伊藤博文','川岛浪速','莫理循','萨道义','嘉道理','端纳','赫立德','马海德','费正清','司徒雷登','刘海澜','德璀琳','瓦德西','李泰国'];
+            if (foreignNames.includes(name)) {
+                const map = {'丁家立':'D','利顺德':'L','赫德':'H','克林德':'K','伊藤博文':'I','川岛浪速':'C','莫理循':'M','萨道义':'S','嘉道理':'J','端纳':'D','赫立德':'H','马海德':'M','费正清':'F','司徒雷登':'S','刘海澜':'L','德璀琳':'D','瓦德西':'W','李泰国':'L'};
+                return map[name] || name.charAt(0);
+            }
+            const pinyinMap = {'周':'Z','李':'L','袁':'Y','张':'Z','梁':'L','黄':'H','蔡':'C','严':'Y','蒋':'J','冯':'F','宋':'S','孔':'K','段':'D','黎':'L','徐':'X','曹':'C','吴':'W','孙':'S','盛':'S','荣':'R','范':'F','侯':'H','梅':'M','尚':'S','荀':'X','马':'M','汪':'W','霍':'H','聂':'N','吉':'J','魏':'W','孟':'M','华':'H','王':'W','朱':'Z','胡':'H','溥':'P','何':'H','邓':'D','陈':'C','林':'L','白':'B','于':'Y','安':'A','曲':'Q','高':'G','温':'W','杨':'Y','丁':'D','赵':'Z','方':'F','靳':'J','鲍':'B','卢':'L','齐':'Q','杜':'D','田':'T','陆':'L','颜':'Y','荫':'Y','铁':'T','载':'Z','奕':'Y','端':'D','刘':'L'};
+            return pinyinMap[name.charAt(0)] || name.charAt(0);
+        }
+
+        function createCatalogItem(person) {
+            const item = document.createElement('div');
+            item.className = 'catalog-item';
+            const fileName = person.f ? `md/${person.f}` : `md/${person.n}传.md`;
+            item.dataset.file = fileName;
+            item.innerHTML = `
+                <div class="name">${person.n}</div>
+                <div class="meta">
+                    <span class="country-tag">${person.c}</span>
+                    <span>${person.b}-${person.d}</span>
+                </div>
+                <div class="brief">${person.i}</div>
+            `;
+            item.addEventListener('click', () => loadDocument(item));
+            return item;
+        }
+
+        async function loadDocument(item) {
+            document.querySelectorAll('.catalog-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            const fileName = item.dataset.file;
+            const personName = item.querySelector('.name').textContent;
+
+            document.getElementById('reader-title').textContent = personName;
+            document.getElementById('reader-content').innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+
+            showReader();
+
+            try {
+                const response = await fetch(fileName);
+                if (!response.ok) throw new Error('加载失败');
+                const text = await response.text();
+                const html = convertMarkdown(text);
+                document.getElementById('reader-content').innerHTML = html;
+                currentDoc = fileName;
+            } catch (error) {
+                document.getElementById('reader-content').innerHTML = `
+                    <div class="welcome-page">
+                        <div class="welcome-icon">❌</div>
+                        <h2>加载失败</h2>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function convertMarkdown(text) {
+            let html = text
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                .replace(/^---$/gm, '<hr>')
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(.+)$/gm, '<p>$1</p>')
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p>(<h[1-6]>)/g, '$1')
+                .replace(/(<\/h[1-6]>)<\/p>/g, '$1')
+                .replace(/(<hr>)<\/p>/g, '$1');
+            return html;
+        }
+
+        function showReader() {
+            document.getElementById('reader-page').classList.add('active');
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.getElementById('reader-tab').classList.add('active');
+            currentTab = 'reader';
+        }
+
+        function hideReader() {
+            document.getElementById('reader-page').classList.remove('active');
+            currentTab = 'catalog';
+            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+            document.querySelector('.tab-item[data-tab="catalog"]').classList.add('active');
+        }
+
+        function bindEvents() {
+            document.getElementById('search-toggle').addEventListener('click', () => {
+                const container = document.getElementById('search-container');
+                container.classList.toggle('active');
+                if (container.classList.contains('active')) {
+                    document.getElementById('search-input').focus();
+                }
+            });
+
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+            document.getElementById('country-filter').addEventListener('change', handleFilter);
+            document.getElementById('sort-select').addEventListener('change', handleSort);
+
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    const tabName = tab.dataset.tab;
+                    if (tabName === 'reader') {
+                        showReader();
+                    } else {
+                        hideReader();
+                        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+                        tab.classList.add('active');
+                        if (tabName === 'charts') {
+                            alert('图谱功能开发中...');
+                            document.querySelector('.tab-item[data-tab="catalog"]').classList.add('active');
+                        }
+                    }
+                });
+            });
+
+            document.getElementById('reader-close').addEventListener('click', hideReader);
+
+            document.getElementById('font-increase').addEventListener('click', () => adjustFontSize(2));
+            document.getElementById('font-decrease').addEventListener('click', () => adjustFontSize(-2));
+            document.getElementById('font-reset').addEventListener('click', resetFontSize);
+
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.body.className = `theme-${btn.dataset.theme}`;
+                });
+            });
+        }
+
+        function handleSearch(e) {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) {
+                buildCatalog();
+            } else {
+                const filtered = peopleData.filter(person =>
+                    person.n.toLowerCase().includes(query) ||
+                    person.i.toLowerCase().includes(query)
+                );
+                buildCatalog(filtered);
+            }
+        }
+
+        function handleFilter(e) {
+            const country = e.target.value;
+            if (country === 'all') {
+                buildCatalog();
+            } else {
+                const filtered = peopleData.filter(person => person.c === country);
+                buildCatalog(filtered);
+            }
+        }
+
+        function handleSort(e) {
+            const sortBy = e.target.value;
+            let sorted = [...peopleData];
+            if (sortBy === 'name') {
+                sorted.sort((a, b) => a.n.localeCompare(b.n, 'zh-CN'));
+            } else if (sortBy === 'birth') {
+                sorted.sort((a, b) => a.b - b.b);
+            }
+            buildCatalog(sorted);
+        }
+
+        function adjustFontSize(delta) {
+            currentFontSize = Math.max(14, Math.min(24, currentFontSize + delta));
+            document.getElementById('reader-content').style.fontSize = `${currentFontSize}px`;
+            document.getElementById('font-size-display').textContent = `${currentFontSize}px`;
+        }
+
+        function resetFontSize() {
+            currentFontSize = 16;
+            document.getElementById('reader-content').style.fontSize = '16px';
+            document.getElementById('font-size-display').textContent = '16px';
+        }
+
+        function updateStats(count = null) {
+            const total = count !== null ? count : peopleData.length;
+            document.getElementById('stats-info').textContent = `共 ${total} 人`;
+        }
+    </script>
+</body>
+</html>

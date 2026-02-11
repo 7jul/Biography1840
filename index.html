@@ -647,18 +647,23 @@
                 <div class="welcome-page" id="welcome-page">
                     <div class="welcome-icon">📚</div>
                     <h2>近代人物传记</h2>
-                    <p>
+                   <p>
                     欢迎阅读近代人物传记<br>
                     声明：本网站由Openclaw自动维护，不保证人物信息的准确性。<br>
                     文字均由AI搜索资料并生成，不得用做学术引用。<br>
                     如有明显错误，可通过联系作者：<br>
                     七月:<a href="mailto:yyuttao@Hotmail.com">yyuttao@Hotmail.com</a>进行修正<br>
-                    </p>
-                    <p>
-                        使用方法<br>
+                   </p>
+                   <p>
+                        使用方法:<br>
                         请从左侧目录选择一位人物开始阅读<br>
                         您可以搜索、筛选、排序来找到感兴趣的人物<br><br>
                         💡 提示：使用顶部工具栏调整阅读界面
+                    </p>
+                    <p style="margin-top: 20px; padding: 15px; background: rgba(233, 69, 96, 0.1); border-radius: 10px; border: 1px solid rgba(233, 69, 96, 0.3);">
+                        📱 <strong>手机访问</strong><br>
+                        手机浏览请访问：<a href="index_phone.html" style="color: #e94560;">手机版页面</a><br>
+                        <span style="font-size: 12px; opacity: 0.7;">专为移动设备优化的阅读体验</span>
                     </p>
                 </div>
                 <div class="markdown-content" id="markdown-content" style="display: none;"></div>
@@ -693,29 +698,14 @@
             }
         }
 
-        // 扫描md目录中的文件（基于data数据）
+        // 扫描md目录中的文件
         async function scanMdFiles() {
-            // 外国人物的文件名格式：大多数为 中文名_英文名.md
-            const foreignNameMap = {
-                '利顺德': '利顺德_Alexander_Stuart.md',
-                '赫德': '赫德_Robert_Hart.md',
-                '克林德': '克林德_Baron_von_der_Goltz.md',
-                '伊藤博文': '伊藤博文_Ito_Hirobumi.md',
-                '莫理循': '莫理循_George_Morrison.md',
-                '萨道义': '萨道义_Ernest_Satow.md',
-                '嘉道理': '嘉道理_Ellis_Kadoorie.md',
-                '端纳': '端纳_William_Henry_Donald.md',
-                '赫立德': '赫立德_Thomas_Helliwell.md',
-                '马海德': '马海德_George_Hatem.md',
-                '刘海澜': '刘海澜_Hiram_Harrison_Lowry.md'
-            };
-
+            // 直接使用JSON中的file字段，无需硬编码
             peopleData.forEach(person => {
-                if (foreignNameMap[person.n]) {
-                    // 外国人物使用特殊文件名格式
-                    mdFiles.set(person.n, `md/${foreignNameMap[person.n]}`);
+                if (person.f) {
+                    mdFiles.set(person.n, `md/${person.f}`);
                 } else {
-                    // 中国人物直接使用 "姓名传.md" 格式
+                    // 如果没有file字段，使用默认规则
                     mdFiles.set(person.n, `md/${person.n}传.md`);
                 }
             });
