@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>近代人物传记</title>
+    <style>
+        :root {
+            --primary-color: #e94560;
+            --bg-color: #1a1a2e;
+            --sidebar-bg: rgba(22, 33, 62, 0.95);
+            --text-color: #e0e0e0;
+            --border-color: rgba(233, 69, 96, 0.2);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-light {
+            --bg-color: #f5f5f5;
+            --sidebar-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #ddd;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-sepia {
+            --bg-color: #f4ecd8;
+            --sidebar-bg: #fdf6e3;
+            --text-color: #5c4b37;
+            --border-color: #d4c4a8;
+            --shadow-color: rgba(92, 75, 55, 0.1);
+        }
+
+        .theme-green {
+            --bg-color: #1a2f1a;
+            --sidebar-bg: rgba(26, 47, 26, 0.95);
+            --text-color: #c8d8c8;
+            --border-color: rgba(76, 175, 80, 0.3);
+            --shadow-color: rgba(0, 0, 0, 0.3);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "Microsoft YaHei", "微软雅黑", "PingFang SC", sans-serif;
+            background: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* 左侧目录栏 */
+        .sidebar {
+            width: 350px;
+            background: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            box-shadow: 2px 0 20px var(--shadow-color);
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: linear-gradient(90deg, rgba(233, 69, 96, 0.1) 0%, transparent 100%);
+        }
+
+        .sidebar-header h1 {
+            font-size: 20px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-header h1::before {
+            content: '📚';
+        }
+
+        /* 搜索框 */
+        .search-box {
+            display: flex;
+            gap: 8px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(233, 69, 96, 0.2);
+        }
+
+        /* 筛选工具栏 */
+        .toolbar {
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .filter-select, .sort-select {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-select:hover, .sort-select:hover {
+            border-color: var(--primary-color);
+        }
+
+        .stats-info {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.7;
+            margin-left: auto;
+        }
+
+        /* 目录列表 */
+        .catalog {
+            flex: 1;
+            overflow-y: auto;
+            padding: 15px;
+        }
+
+        .catalog::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .catalog::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .catalog::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 3px;
+        }
+
+        .catalog-item {
+            padding: 12px 15px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .catalog-item:hover {
+            background: rgba(233, 69, 96, 0.1);
+            border-color: var(--primary-color);
+            transform: translateX(5px);
+        }
+
+        .catalog-item.active {
+            background: linear-gradient(135deg, rgba(233, 69, 96, 0.2) 0%, rgba(233, 69, 96, 0.1) 100%);
+            border-color: var(--primary-color);
+        }
+
+        .catalog-item .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .catalog-item .name {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .catalog-item .meta {
+            display: flex;
+            gap: 8px;
+            font-size: 11px;
+            color: var(--text-color);
+            opacity: 0.7;
+        }
+
+        .catalog-item .country-tag {
+            padding: 2px 8px;
+            background: rgba(233, 69, 96, 0.15);
+            color: var(--primary-color);
+            border-radius: 12px;
+            font-size: 10px;
+        }
+
+        .catalog-item .brief {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.8;
+            line-height: 1.4;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+        }
+
+        /* 右侧内容区 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        /* 顶部工具栏 */
+        .content-toolbar {
+            padding: 15px 25px;
+            background: var(--sidebar-bg);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px var(--shadow-color);
+        }
+
+        .doc-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .toolbar-group {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        /* 字号控制 */
+        .font-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .font-btn {
+            width: 32px;
+            height: 32px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-color);
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .font-btn:hover {
+            background: rgba(233, 69, 96, 0.2);
+            border-color: var(--primary-color);
+        }
+
+        .font-size-display {
+            font-size: 14px;
+            color: var(--text-color);
+            min-width: 50px;
+            text-align: center;
+        }
+
+        /* 主题切换 */
+        .theme-switch {
+            display: flex;
+            gap: 8px;
+        }
+
+        .theme-btn {
+            width: 32px;
+            height: 32px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn.active {
+            border-color: var(--primary-color);
+            transform: scale(1.1);
+        }
+
+        .theme-btn.default {
+            background: linear-gradient(135deg, #1a1a2e 50%, #e94560 50%);
+        }
+
+        .theme-btn.light {
+            background: #f5f5f5;
+        }
+
+        .theme-btn.sepia {
+            background: #f4ecd8;
+        }
+
+        .theme-btn.green {
+            background: #1a2f1a;
+        }
+
+        /* 阅读区域 */
+        .reader-area {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px 50px;
+        }
+
+        .reader-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .reader-area::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .reader-area::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 4px;
+        }
+
+        /* Markdown内容样式 */
+        .markdown-content {
+            max-width: 800px;
+            margin: 0 auto;
+            line-height: 1.8;
+            transition: all 0.3s ease;
+        }
+
+        .markdown-content h1 {
+            font-size: 2em;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            text-align: center;
+        }
+
+        .markdown-content h2 {
+            font-size: 1.5em;
+            color: var(--primary-color);
+            margin: 30px 0 15px 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .markdown-content h3 {
+            font-size: 1.25em;
+            color: var(--text-color);
+            margin: 25px 0 10px 0;
+            padding-left: 15px;
+            border-left: 3px solid var(--primary-color);
+        }
+
+        .markdown-content p {
+            margin: 15px 0;
+            text-align: justify;
+            text-indent: 2em;
+        }
+
+        .markdown-content hr {
+            border: none;
+            border-top: 2px dashed var(--border-color);
+            margin: 30px 0;
+        }
+
+        .markdown-content ul, .markdown-content ol {
+            margin: 15px 0;
+            padding-left: 30px;
+        }
+
+        .markdown-content li {
+            margin: 8px 0;
+        }
+
+        .markdown-content blockquote {
+            margin: 20px 0;
+            padding: 15px 20px;
+            background: rgba(233, 69, 96, 0.1);
+            border-left: 4px solid var(--primary-color);
+            border-radius: 0 8px 8px 0;
+        }
+
+        .markdown-content code {
+            background: rgba(233, 69, 96, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: "Consolas", "Monaco", monospace;
+            font-size: 0.9em;
+        }
+
+        .markdown-content pre {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+        }
+
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        .markdown-content th, .markdown-content td {
+            border: 1px solid var(--border-color);
+            padding: 12px;
+            text-align: left;
+        }
+
+        .markdown-content th {
+            background: rgba(233, 69, 96, 0.1);
+            color: var(--primary-color);
+        }
+
+        /* 欢迎页面 */
+        .welcome-page {
+            text-align: center;
+            padding: 100px 50px;
+        }
+
+        .welcome-page h2 {
+            font-size: 28px;
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .welcome-page p {
+            font-size: 16px;
+            color: var(--text-color);
+            opacity: 0.7;
+            line-height: 1.8;
+        }
+
+        .welcome-icon {
+            font-size: 64px;
+            margin-bottom: 30px;
+        }
+
+        /* 分类标签 */
+        .category-tag {
+            display: inline-block;
+            padding: 4px 10px;
+            background: rgba(233, 69, 96, 0.15);
+            color: var(--primary-color);
+            border-radius: 15px;
+            font-size: 11px;
+            margin-right: 5px;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 1024px) {
+            .sidebar {
+                width: 300px;
+            }
+
+            .reader-area {
+                padding: 25px 35px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: 40vh;
+            }
+
+            .main-content {
+                height: 60vh;
+            }
+
+            .reader-area {
+                padding: 20px 25px;
+            }
+        }
+
+        /* 动画 */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        /* 加载动画 */
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 50px;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--border-color);
+            border-top-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 分组标题 */
+        .group-title {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.6;
+            padding: 10px 15px 5px;
+            margin-top: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 左侧目录栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <h1>近代人物传记</h1>
+                <div class="search-box">
+                    <input type="text" class="search-input" id="search-input" placeholder="🔍 搜索人物姓名...">
+                </div>
+            </div>
+
+            <div class="toolbar">
+                <div class="filter-group">
+                    <span class="filter-label">国别:</span>
+                    <select class="filter-select" id="country-filter">
+                        <option value="all">全部</option>
+                        <option value="中国">🇨🇳 中国</option>
+                        <option value="日本">🇯🇵 日本</option>
+                        <option value="英国">🇬🇧 英国</option>
+                        <option value="美国">🇺🇸 美国</option>
+                        <option value="德国">🇩🇪 德国</option>
+                        <option value="澳大利亚">🇦🇺 澳大利亚</option>
+                        <option value="爱尔兰">🇮🇪 爱尔兰</option>
+                        <option value="巴格达犹太">🏛️ 巴格达犹太</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">排序:</span>
+                    <select class="sort-select" id="sort-select">
+                        <option value="name">按姓名</option>
+                        <option value="birth">按出生年</option>
+                        <option value="country">按国别</option>
+                    </select>
+                </div>
+
+                <span class="stats-info" id="stats-info">共 0 人</span>
+            </div>
+
+            <div class="catalog" id="catalog">
+                <!-- 目录项将通过JS动态生成 -->
+            </div>
+        </aside>
+
+        <!-- 右侧内容区 -->
+        <main class="main-content">
+            <!-- 顶部工具栏 -->
+            <div class="content-toolbar">
+                <div class="doc-title" id="doc-title">📖 近代人物传记</div>
+                <div class="toolbar-group">
+                    <!-- 字号控制 -->
+                    <div class="font-control">
+                        <button class="font-btn" id="font-decrease" title="缩小字号">A-</button>
+                        <span class="font-size-display" id="font-size-display">18px</span>
+                        <button class="font-btn" id="font-increase" title="放大字号">A+</button>
+                        <button class="font-btn" id="font-reset" title="重置字号">↺</button>
+                    </div>
+
+                    <!-- 主题切换 -->
+                    <div class="theme-switch">
+                        <button class="theme-btn default active" data-theme="default" title="默认深色"></button>
+                        <button class="theme-btn light" data-theme="light" title="浅色模式"></button>
+                        <button class="theme-btn sepia" data-theme="sepia" title="护眼模式"></button>
+                        <button class="theme-btn green" data-theme="green" title="深绿模式"></button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 阅读区域 -->
+            <div class="reader-area" id="reader-area">
+                <div class="welcome-page" id="welcome-page">
+                    <div class="welcome-icon">📚</div>
+                    <h2>近代人物传记</h2>
+                    <p>
+                    欢迎阅读近代人物传记<br>
+                    声明：本网站由Openclaw自动维护，不保证人物信息的准确性。<br>
+                    文字均由AI搜索资料并生成，不得用做学术引用。<br>
+                    如有明显错误，可通过联系作者：<br>
+                    七月:<a href="mailto:yyuttao@Hotmail.com">yyuttao@Hotmail.com</a>进行修正<br>
+                    </p>
+                    <p>
+                        使用方法<br>
+                        请从左侧目录选择一位人物开始阅读<br>
+                        您可以搜索、筛选、排序来找到感兴趣的人物<br><br>
+                        💡 提示：使用顶部工具栏调整阅读界面
+                    </p>
+                </div>
+                <div class="markdown-content" id="markdown-content" style="display: none;"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // 人物数据（从JSON文件加载）
+        let peopleData = [];
+        let mdFiles = new Map(); // 文件名映射
+        let currentDoc = null;
+        let currentFontSize = 18;
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadPeopleData();
+            await scanMdFiles();
+            buildCatalog();
+            bindEvents();
+        });
+
+        // 加载人物数据
+        async function loadPeopleData() {
+            try {
+                const response = await fetch('data/people.min.json');
+                const data = await response.json();
+                peopleData = data.data;
+                updateStats();
+            } catch (error) {
+                console.error('加载人物数据失败:', error);
+            }
+        }
+
+        // 扫描md目录中的文件（基于data数据）
+        async function scanMdFiles() {
+            // 外国人物的文件名格式：大多数为 中文名_英文名.md
+            const foreignNameMap = {
+                '利顺德': '利顺德_Alexander_Stuart.md',
+                '赫德': '赫德_Robert_Hart.md',
+                '克林德': '克林德_Baron_von_der_Goltz.md',
+                '伊藤博文': '伊藤博文_Ito_Hirobumi.md',
+                '莫理循': '莫理循_George_Morrison.md',
+                '萨道义': '萨道义_Ernest_Satow.md',
+                '嘉道理': '嘉道理_Ellis_Kadoorie.md',
+                '端纳': '端纳_William_Henry_Donald.md',
+                '赫立德': '赫立德_Thomas_Helliwell.md',
+                '马海德': '马海德_George_Hatem.md',
+                '刘海澜': '刘海澜_Hiram_Harrison_Lowry.md'
+            };
+
+            peopleData.forEach(person => {
+                if (foreignNameMap[person.n]) {
+                    // 外国人物使用特殊文件名格式
+                    mdFiles.set(person.n, `md/${foreignNameMap[person.n]}`);
+                } else {
+                    // 中国人物直接使用 "姓名传.md" 格式
+                    mdFiles.set(person.n, `md/${person.n}传.md`);
+                }
+            });
+        }
+
+        // 构建目录（使用data数据）
+        function buildCatalog(filteredData = null) {
+            const data = filteredData || peopleData;
+            const catalog = document.getElementById('catalog');
+            catalog.innerHTML = '';
+
+            // 按首字母分组
+            const grouped = {};
+            data.forEach(person => {
+                const letter = getFirstLetter(person.n);
+                if (!grouped[letter]) {
+                    grouped[letter] = [];
+                }
+                grouped[letter].push(person);
+            });
+
+            // 生成目录
+            Object.keys(grouped).sort().forEach(letter => {
+                const groupTitle = document.createElement('div');
+                groupTitle.className = 'group-title';
+                groupTitle.textContent = `▣ ${letter}`;
+                catalog.appendChild(groupTitle);
+
+                grouped[letter].forEach(person => {
+                    const item = createCatalogItem(person);
+                    catalog.appendChild(item);
+                });
+            });
+        }
+
+        // 获取首字母（支持中英文）
+        function getFirstLetter(name) {
+            const foreignNameMap = {
+                '丁家立': 'D', '利顺德': 'L', '赫德': 'H', '克林德': 'K',
+                '伊藤博文': 'I', '川岛浪速': 'C', '莫理循': 'M', '萨道义': 'S',
+                '嘉道理': 'J', '端纳': 'D', '赫立德': 'H', '马海德': 'M',
+                '费正清': 'F', '司徒雷登': 'S', '刘海澜': 'L', '德璀琳': 'D',
+                '瓦德西': 'W', '李泰国': 'L'
+            };
+            
+            if (foreignNameMap[name]) {
+                return foreignNameMap[name];
+            }
+            
+            // 中文字符拼音首字母映射
+            const pinyinMap = {
+                '周': 'Z', '李': 'L', '袁': 'Y', '张': 'Z', '梁': 'L',
+                '黄': 'H', '蔡': 'C', '严': 'Y', '蒋': 'J', '冯': 'F',
+                '宋': 'S', '孔': 'K', '段': 'D', '黎': 'L', '徐': 'X',
+                '曹': 'C', '吴': 'W', '孙': 'S', '盛': 'S', '荣': 'R',
+                '范': 'F', '侯': 'H', '梅': 'M', '尚': 'S', '荀': 'X',
+                '马': 'M', '汪': 'W', '霍': 'H', '聂': 'N', '吉': 'J',
+                '魏': 'W', '孟': 'M', '华': 'H', '王': 'W', '朱': 'Z',
+                '胡': 'H', '溥': 'P', '何': 'H', '邓': 'D', '陈': 'C',
+                '林': 'L', '白': 'B', '于': 'Y', '安': 'A', '曲': 'Q',
+                '高': 'G', '温': 'W', '杨': 'Y', '丁': 'D', '赵': 'Z',
+                '方': 'F', '靳': 'J', '鲍': 'B', '卢': 'L', '齐': 'Q',
+                '杜': 'D', '田': 'T', '陆': 'L', '颜': 'Y', '荫': 'Y',
+                '铁': 'T', '载': 'Z', '奕': 'Y', '端': 'D', '刘': 'L',
+                '沈': 'S', '陶': 'T', '叶': 'Y', '章': 'Z', '秦': 'Q',
+                '石': 'S', '程': 'C', '谢': 'X', '唐': 'T', '谭': 'T',
+                '欧': 'O', '雷': 'L', '贺': 'H', '顾': 'G', '康': 'K',
+                '武': 'W', '邵': 'S', '余': 'Y', '潘': 'P', '杜': 'D',
+                '苏': 'S', '邹': 'Z', '巫': 'W', '牛': 'N', '蒲': 'P',
+                '燕': 'Y', '郑': 'Z', '管': 'G', '卢': 'L', '莫': 'M',
+                '江': 'J', '冯': 'F', '韦': 'W', '昌': 'C', '姚': 'Y',
+                '傅': 'F', '钟': 'Z', '熊': 'X', '秋': 'Q', '禹': 'Y',
+                '米': 'M', '麦': 'M', '常': 'C', '武': 'W', '乔': 'Q',
+                '贺': 'H', '赖': 'L', '文': 'W', '鲁': 'L', '廖': 'L',
+                '骆': 'L', '龚': 'G', '樊': 'F', '兰': 'L', '兰': 'L',
+                '凌': 'L', '霍': 'H', '虞': 'Y', '支': 'Z', '柯': 'K',
+                '管': 'G', '卢': 'L', '莫': 'M', '房': 'F', '裘': 'Q',
+                '缪': 'M', '解': 'X', '应': 'Y', '宗': 'Z', '丁': 'D',
+                '宣': 'X', '邓': 'D', '单': 'S', '杭': 'H', '洪': 'H',
+                '包': 'B', '诸': 'Z', '左': 'Z', '石': 'S', '崔': 'C',
+                '吉': 'J', '钮': 'N', '龚': 'G', '程': 'C', '嵇': 'J',
+                '邢': 'X', '裴': 'P', '陆': 'L', '荣': 'R', '翁': 'W',
+                '荀': 'X', '羊': 'Y', '於': 'Y', '甄': 'Z', '魏': 'W',
+                '加': 'J', '司': 'S', '韶': 'S', '陈': 'C', '戴': 'D'
+            };
+            
+            const firstChar = name.charAt(0);
+            return pinyinMap[firstChar] || firstChar;
+        }
+
+        // 创建目录项
+        function createCatalogItem(person) {
+            const item = document.createElement('div');
+            item.className = 'catalog-item';
+            
+            // 获取正确的文件名
+            const fileName = mdFiles.get(person.n) || `md/${person.n}传.md`;
+            item.dataset.file = fileName;
+            
+            item.innerHTML = `
+                <div class="header">
+                    <div class="name">${person.n}</div>
+                    <div class="meta">
+                        <span class="country-tag">${person.c}</span>
+                        <span>${person.b}-${person.d}</span>
+                    </div>
+                </div>
+                <div class="brief">${person.i}</div>
+            `;
+            item.addEventListener('click', () => loadDocument(item));
+            return item;
+        }
+
+        // 加载文档
+        async function loadDocument(item) {
+            // 更新激活状态
+            document.querySelectorAll('.catalog-item').forEach(i => i.classList.remove('active'));
+            item.classList.add('active');
+
+            // 显示加载动画
+            document.getElementById('welcome-page').style.display = 'none';
+            const contentArea = document.getElementById('markdown-content');
+            contentArea.style.display = 'block';
+            contentArea.innerHTML = '<div class="loading"><div class="loading-spinner"></div></div>';
+            contentArea.classList.add('fade-in');
+
+            // 获取文件名
+            const fileName = item.dataset.file;
+            const personName = item.querySelector('.name').textContent;
+            document.getElementById('doc-title').textContent = `📖 ${personName}`;
+
+            try {
+                const response = await fetch(fileName);
+                if (!response.ok) {
+                    throw new Error('文档加载失败');
+                }
+                const text = await response.text();
+                const html = convertMarkdown(text);
+                contentArea.innerHTML = html;
+                contentArea.classList.add('fade-in');
+                currentDoc = fileName;
+
+                // 滚动到顶部
+                contentArea.scrollTop = 0;
+            } catch (error) {
+                contentArea.innerHTML = `
+                    <div style="text-align: center; padding: 50px;">
+                        <h2 style="color: var(--primary-color);">文档加载失败</h2>
+                        <p>${error.message}</p>
+                        <p style="margin-top: 20px; opacity: 0.7;">文件路径: ${fileName}</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Markdown转HTML
+        function convertMarkdown(text) {
+            let html = text
+                // 标题
+                .replace(/^# (.+)$/gm, '<h1>$1</h1>')
+                .replace(/^## (.+)$/gm, '<h2>$1</h2>')
+                .replace(/^### (.+)$/gm, '<h3>$1</h3>')
+                // 分割线
+                .replace(/^---$/gm, '<hr>')
+                // 段落
+                .replace(/\n\n/g, '</p><p>')
+                .replace(/^(.+)$/gm, '<p>$1</p>')
+                // 清除多余的p标签
+                .replace(/<p><\/p>/g, '')
+                .replace(/<p>(<h[1-6]>)/g, '$1')
+                .replace(/(<\/h[1-6]>)<\/p>/g, '$1')
+                .replace(/(<hr>)<\/p>/g, '$1');
+
+            return html;
+        }
+
+        // 绑定事件
+        function bindEvents() {
+            // 搜索
+            document.getElementById('search-input').addEventListener('input', handleSearch);
+
+            // 筛选
+            document.getElementById('country-filter').addEventListener('change', handleFilter);
+
+            // 排序
+            document.getElementById('sort-select').addEventListener('change', handleSort);
+
+            // 字号控制
+            document.getElementById('font-increase').addEventListener('click', () => adjustFontSize(2));
+            document.getElementById('font-decrease').addEventListener('click', () => adjustFontSize(-2));
+            document.getElementById('font-reset').addEventListener('click', resetFontSize);
+
+            // 主题切换
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.body.className = `theme-${btn.dataset.theme}`;
+                });
+            });
+        }
+
+        // 处理搜索
+        function handleSearch(e) {
+            const query = e.target.value.trim().toLowerCase();
+            if (!query) {
+                buildCatalog();
+                return;
+            }
+
+            const filtered = peopleData.filter(person =>
+                person.n.toLowerCase().includes(query) ||
+                person.i.toLowerCase().includes(query)
+            );
+            buildCatalog(filtered);
+            updateStats(filtered.length);
+        }
+
+        // 处理筛选
+        function handleFilter(e) {
+            const country = e.target.value;
+            if (country === 'all') {
+                buildCatalog();
+                updateStats();
+            } else {
+                const filtered = peopleData.filter(person => person.c === country);
+                buildCatalog(filtered);
+                updateStats(filtered.length);
+            }
+        }
+
+        // 处理排序
+        function handleSort(e) {
+            const sortBy = e.target.value;
+            let sorted = [...peopleData];
+
+            switch (sortBy) {
+                case 'name':
+                    sorted.sort((a, b) => a.n.localeCompare(b.n, 'zh-CN'));
+                    break;
+                case 'birth':
+                    sorted.sort((a, b) => a.b - b.b);
+                    break;
+                case 'country':
+                    sorted.sort((a, b) => a.c.localeCompare(b.c, 'zh-CN'));
+                    break;
+            }
+
+            buildCatalog(sorted);
+        }
+
+        // 调整字号
+        function adjustFontSize(delta) {
+            currentFontSize = Math.max(12, Math.min(32, currentFontSize + delta));
+            document.getElementById('markdown-content').style.fontSize = `${currentFontSize}px`;
+            document.getElementById('font-size-display').textContent = `${currentFontSize}px`;
+        }
+
+        // 重置字号
+        function resetFontSize() {
+            currentFontSize = 18;
+            document.getElementById('markdown-content').style.fontSize = '18px';
+            document.getElementById('font-size-display').textContent = '18px';
+        }
+
+        // 更新统计
+        function updateStats(count = null) {
+            const total = count !== null ? count : peopleData.length;
+            document.getElementById('stats-info').textContent = `共 ${total} 人`;
+        }
+    </script>
+</body>
+</html>
