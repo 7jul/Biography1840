@@ -773,16 +773,12 @@
 
         function showReader() {
             document.getElementById('reader-page').classList.add('active');
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.getElementById('reader-tab').classList.add('active');
             currentTab = 'reader';
         }
 
         function hideReader() {
             document.getElementById('reader-page').classList.remove('active');
             currentTab = 'catalog';
-            document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-            document.querySelector('.tab-item[data-tab="catalog"]').classList.add('active');
         }
 
         function bindEvents() {
