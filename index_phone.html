@@ -595,20 +595,25 @@
         </div>
     </main>
 
-    <!-- 底部标签栏 -->
+    <!-- 底部工具栏 -->
     <nav class="tabbar">
-        <button class="tab-item active" data-tab="catalog">
-            <span class="icon">📖</span>
-            <span class="label">目录</span>
-        </button>
-        <button class="tab-item" data-tab="charts">
-            <span class="icon">📊</span>
-            <span class="label">图谱</span>
-        </button>
-        <button class="tab-item" id="reader-tab">
-            <span class="icon">📄</span>
-            <span class="label">阅读</span>
-        </button>
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 8px 16px;">
+            <span style="font-size: 10px; opacity: 0.6; margin-bottom: 4px;">配色</span>
+            <div class="theme-switch" style="gap: 4px;">
+                <button class="theme-btn default active" data-theme="default" title="默认" style="width: 28px; height: 28px;"></button>
+                <button class="theme-btn light" data-theme="light" title="浅色" style="width: 28px; height: 28px;"></button>
+                <button class="theme-btn sepia" data-theme="sepia" title="护眼" style="width: 28px; height: 28px;"></button>
+                <button class="theme-btn green" data-theme="green" title="深绿" style="width: 28px; height: 28px;"></button>
+            </div>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; padding: 8px 16px;">
+            <span style="font-size: 10px; opacity: 0.6; margin-bottom: 4px;">字号</span>
+            <div style="display: flex; align-items: center; gap: 4px;">
+                <button class="font-btn" id="phone-font-decrease" style="width: 32px; height: 28px; font-size: 12px;">A-</button>
+                <span id="phone-font-display" style="font-size: 10px; min-width: 35px; text-align: center;">16px</span>
+                <button class="font-btn" id="phone-font-increase" style="width: 32px; height: 28px; font-size: 12px;">A+</button>
+            </div>
+        </div>
     </nav>
 
     <!-- 工具栏弹出层 -->
@@ -781,6 +786,7 @@
         }
 
         function bindEvents() {
+            // 搜索切换
             document.getElementById('search-toggle').addEventListener('click', () => {
                 const container = document.getElementById('search-container');
                 container.classList.toggle('active');
@@ -789,33 +795,19 @@
                 }
             });
 
+            // 搜索、筛选、排序
             document.getElementById('search-input').addEventListener('input', handleSearch);
             document.getElementById('country-filter').addEventListener('change', handleFilter);
             document.getElementById('sort-select').addEventListener('change', handleSort);
 
-            document.querySelectorAll('.tab-item').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const tabName = tab.dataset.tab;
-                    if (tabName === 'reader') {
-                        showReader();
-                    } else {
-                        hideReader();
-                        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
-                        tab.classList.add('active');
-                        if (tabName === 'charts') {
-                            alert('图谱功能开发中...');
-                            document.querySelector('.tab-item[data-tab="catalog"]').classList.add('active');
-                        }
-                    }
-                });
-            });
-
+            // 关闭阅读页面
             document.getElementById('reader-close').addEventListener('click', hideReader);
 
-            document.getElementById('font-increase').addEventListener('click', () => adjustFontSize(2));
-            document.getElementById('font-decrease').addEventListener('click', () => adjustFontSize(-2));
-            document.getElementById('font-reset').addEventListener('click', resetFontSize);
+            // 手机版字号调节
+            document.getElementById('phone-font-increase').addEventListener('click', () => adjustFontSize(2));
+            document.getElementById('phone-font-decrease').addEventListener('click', () => adjustFontSize(-2));
 
+            // 配色切换
             document.querySelectorAll('.theme-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
                     document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
